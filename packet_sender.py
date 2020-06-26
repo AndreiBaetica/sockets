@@ -2,19 +2,18 @@ import sys, socket, binascii
 #Temporary debug args
 sys.argv = ["packet_sender.py", "192.168.0.3", "COLOMBIA 2 - MESSI 0"]
 
-serverIP = sys.argv[1]
-payload = sys.argv[2]
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#commenting this out until we get a server. Running it will keep the script hanging on this command
-#s.connect((server, 1234))
+def ipToHex(ipAddress):
+        return binascii.hexlify(socket.inet_aton(ipAddress)).decode('utf-8')
 
-payload = payload.encode('utf-8').hex()
+#TODO
+def calculateChecksum(packet):
+        return
 
-sourceIP = socket.gethostbyname(socket.gethostname())
-sourceIP = binascii.hexlify(socket.inet_aton(sourceIP)).decode('utf-8')
+serverIP = ipToHex(sys.argv[1])
+sourceIP = ipToHex(socket.gethostbyname(socket.gethostname()))
 
-serverIP = binascii.hexlify(socket.inet_aton(serverIP)).decode('utf-8')
+payload = sys.argv[2].encode('utf-8').hex()
 
 #temporary
 checksum = '0000'
@@ -28,10 +27,12 @@ if len(headerLength) == 2:
 
 
 packet = '4500' + headerLength + '1c4640004006' + checksum + sourceIP + serverIP + payload
-
 #padding
 while (len(packet) % 8 != 0):
         packet = packet + '0'
-
 #TODO: compute checksum
 #TODO: send packet to server
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#commenting this out until we get a server. Running it will keep the script hanging on this command
+#s.connect((server, 1234))
