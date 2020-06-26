@@ -1,4 +1,4 @@
-import sys, socket,binascii
+import sys, socket, binascii
 #Temporary debug args
 sys.argv = ["packet_sender.py", "192.168.0.3", "COLOMBIA 2 - MESSI 0"]
 
@@ -11,8 +11,10 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 payload = payload.encode('utf-8').hex()
 
-sourceIP = socket.gethostbyname(socket.gethostname()).encode('utf-8')
-#TODO: translate source and server ip addresses to hex
+sourceIP = socket.gethostbyname(socket.gethostname())
+sourceIP = binascii.hexlify(socket.inet_aton(sourceIP)).decode('utf-8')
+
+serverIP = binascii.hexlify(socket.inet_aton(serverIP)).decode('utf-8')
 
 #temporary
 checksum = '0000'
@@ -25,8 +27,11 @@ if len(headerLength) == 2:
 	headerLength = '00' + headerLength
 
 
+packet = '4500' + headerLength + '1c4640004006' + checksum + sourceIP + serverIP + payload
+
+#padding
+while (len(packet) % 8 != 0):
+        packet = packet + '0'
+
 #TODO: compute checksum
-packetNoChecksum = '4500' + headerLength + '1c4640004006' + checksum + sourceIP + serverIP + payload
-
-
 #TODO: send packet to server
