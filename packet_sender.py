@@ -43,13 +43,15 @@ def main():
         #padding
         while (len(packet) % 8 != 0):
                 packet = packet + '0'
-                
-        checksum = calculateChecksum(packet)
+        
+        #omit payload 
+        checksum = calculateChecksum('4500' + headerLength + '1c4640004006' + checksum + sourceIP + serverIP)
+        
         packet = '4500' + headerLength + '1c4640004006' + checksum + sourceIP + serverIP + payload
         #padding
         while (len(packet) % 8 != 0):
                 packet = packet + '0'
-                
+
         #TODO: send packet to server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #commenting this out until we get a server. Running it will keep the script hanging on this command
