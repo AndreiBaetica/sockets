@@ -1,19 +1,20 @@
 import sys, socket, binascii
 #Temporary debug args
-sys.argv = ["packet_sender.py", "192.168.0.3", "COLOMBIA 2 - MESSI 0"]
+sys.argv = ["packet_sender.py", "192.168.56.1", "COLOMBIA 2 - MESSI 0"]
 
 
 def ipToHex(ipAddress):
         return binascii.hexlify(socket.inet_aton(ipAddress)).decode('utf-8')
 
 def calculateChecksum(packet):
-        packetSplit = [packet[i:i+4] for i in range(0, len(packet), 4)]
+        header = packet[0:40]
+        headerSplit = [header[i:i+4] for i in range(0, len(header), 4)]
         hexList = []
-        for i in packetSplit:
+        for i in headerSplit:
                 hexList.append(int(i, 16))
         result = hex(sum(hexList))[2:]
         #halde the carry
-        while  len(result) != 4:
+        while len(result) != 4:
                 while len(result) % 4 != 0:
                         result = '0' + result
                 resultSplit = [result[i:i+4] for i in range(0, len(result), 4)]
@@ -21,6 +22,8 @@ def calculateChecksum(packet):
                 for i in resultSplit:
                         hexList.append(int(i, 16))
                 result = hex(sum(hexList))[2:]
+        result = int(hex(65535)[2:], 16) - int(result, 16)
+        result = hex(result)[2:]
         return result
 
 def main():
@@ -33,7 +36,7 @@ def main():
         checksum = '0000'
 
         headerLength = (len('4500') + 4 + len('1c4640004006') 
-                + len(checksum) + len(sourceIP) + len(serverIP) + len(payload)) // 2
+                + len(checksum) + len(sourceIP) + len(serverIP)) // 2
         headerLength = hex(headerLength)[2:]
 
         if len(headerLength) == 2:
@@ -51,11 +54,10 @@ def main():
         #padding
         while (len(packet) % 8 != 0):
                 packet = packet + '0'
-
         #TODO: send packet to server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #commenting this out until we get a server. Running it will keep the script hanging on this command
-        #s.connect((server, 1234))
+        s.connect((serverIP, 1234))
 
 if __name__ == "__main__":
         main()
