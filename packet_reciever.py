@@ -27,32 +27,20 @@ def decodePayload(packet):
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((socket.gethostname(), 1234))
+print(f"Starting server on {socket.gethostname()}.")
+s.listen(5)
 
-servadd = (socket.gethostbyname(socket.gethostname()), 1234)
-print(socket.gethostbyname(socket.gethostname()))
-print('starting up on %s port %s' %servadd)
-s.bind(servadd)
-s.listen(1)
+clientsocket, address = s.accept()
+print(f"Connection from {address} has been established.")
+clientsocket.send(bytes('Connected to server.', 'utf-8'))
+    
+msg = clientsocket.recv(1024)
+packet = msg.decode('utf-8')
 
-while True:
-    print('waiting for a connection')
-    connection, cadd = s.accept()
-
-    try:
-        print( 'connection from:', cadd)
-
-        while True:
-            data = connection.recv(100)
-            data2 = binascii.unhexlify(data)
-            print ('received as: ' , data)
-            print ('converted into: ' , data2)
-
-            if data:
-                print('sending data back to client')
-                connection.sendall(data2)
-            else:
-                print('no more data from ', cadd)
-                break
-
-    finally:
-        connection.close()
+if decodeChecksum(packet):
+    print("Data received: " + decodePayload(packet))
+    clientsocket.send(bytes('Data successfully recieved by server.', 'utf-8'))
+else:
+    print("Checksum validation failed!")
+    clientsocket.send(bytes('Checksum validation failed!', 'utf-8'))

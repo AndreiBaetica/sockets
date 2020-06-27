@@ -1,6 +1,6 @@
 import sys, socket, binascii
 #Temporary debug args
-sys.argv = ["packet_sender.py", "192.168.56.1", "COLOMBIA 2 - MESSI 0"]
+#sys.argv = ["packet_sender.py", "192.168.56.1", "COLOMBIA 2 - MESSI 0"]
 
 
 def ipToHex(ipAddress):
@@ -54,10 +54,17 @@ def main():
         #padding
         while (len(packet) % 8 != 0):
                 packet = packet + '0'
+
         #TODO: send packet to server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #commenting this out until we get a server. Running it will keep the script hanging on this command
-        s.connect((serverIP, 1234))
+        s.connect((socket.gethostbyaddr(sys.argv[1])[0], 1234))
+        msg = s.recv(1024)
+        print(msg.decode('utf-8'))
+
+        s.send(bytes(packet, 'utf-8'))
+
+        msg = s.recv(1024)
+        print(msg.decode('utf-8'))
 
 if __name__ == "__main__":
         main()
